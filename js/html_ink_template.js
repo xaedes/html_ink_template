@@ -1,4 +1,5 @@
-(function(storyContent) {
+function main()
+{
     var delayParagraph = 100.0;
     var delayChoice = 100.0;
 
@@ -89,5 +90,6 @@
     }
 
     continueStory();
+}
 
-})(storyContent);
+

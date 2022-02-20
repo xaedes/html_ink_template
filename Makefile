@@ -1,15 +1,44 @@
+# replace "html_ink_template.js" with a name fitting to your project
+BUILD_JS_FILE = html_ink_template.js
+JS_FILES = main.js
+
+MAIN_STORY_FILE = main.ink
+STORY_FILES = $(MAIN_STORY_FILE) 
+
+BUILD_STORY_JS_FILE = story_content.js
+BUILD_STORY_JSON_FILE = story_content.json
+STORY_JS_TEMPLATE_FILE = story_template.js
+
+
+BUILD_JS_FILEPATH = $(addprefix js/,$(BUILD_JS_FILE))
+BUILD_STORY_JS_FILEPATH = $(addprefix js/,$(BUILD_STORY_JS_FILE))
+BUILD_STORY_JSON_FILEPATH = $(addprefix js/,$(BUILD_STORY_JSON_FILE))
+
+STORY_JS_TEMPLATE_FILEPATH = $(addprefix src/,$(STORY_JS_TEMPLATE_FILE))
+JS_FILEPATHS = $(addprefix src/,$(JS_FILES))
+
+MAIN_STORY_FILEPATH = $(addprefix story/,$(MAIN_STORY_FILE))
+STORY_FILEPATHS = $(addprefix story/,$(STORY_FILES))
+
+ALL_TARGET_FILES = $(BUILD_JS_FILEPATH) $(BUILD_STORY_JS_FILEPATH)  $(BUILD_STORY_JSON_FILEPATH) 
 
 .PHONY : all
-all : js/story.js
+all : $(ALL_TARGET_FILES)
 
-js/story.js: js/story_template.js js/story.json
-	cat js/story_template.js > js/story.js
-	cat js/story.json >> js/story.js
+clean: 
+	rm $(ALL_TARGET_FILES)
 
-js/story.json: story/main.ink tools/inklecate
-	tools/inklecate -j -o js/story_with_bom.json story/main.ink
-	iconv -f utf-8 -t utf-16le js/story_with_bom.json | iconv -f utf-16 -t utf-8 > js/story.json
+$(BUILD_JS_FILEPATH): ${JS_FILEPATHS}
+	cat ${JS_FILEPATHS} > $(BUILD_JS_FILEPATH)
 
+$(BUILD_STORY_JS_FILEPATH):  $(BUILD_STORY_JSON_FILEPATH)
+	cat $(STORY_JS_TEMPLATE_FILEPATH) > $(BUILD_STORY_JS_FILEPATH)
+	cat $(BUILD_STORY_JSON_FILEPATH) >> $(BUILD_STORY_JS_FILEPATH)
+
+$(BUILD_STORY_JSON_FILEPATH): $(MAIN_STORY_FILEPATH) $(STORY_FILEPATHS) tools/inklecate
+	tools/inklecate -j -o js/story_content_with_bom.json $(MAIN_STORY_FILEPATH)
+	iconv -f utf-8 -t utf-16le js/story_content_with_bom.json | iconv -f utf-16 -t utf-8 > $(BUILD_STORY_JSON_FILEPATH)
+	rm js/story_content_with_bom.json
 tools/inklecate: tools/inklecate_linux.zip
 	cd tools && unzip inklecate_linux.zip && touch inklecate
 	
